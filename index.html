@@ -602,19 +602,36 @@ async function graph(path, opts){
   if(!r.ok){ throw new Error((j.error&&j.error.message)||('Graph '+r.status)); }
   return j;
 }
+// Column maps: SharePoint gives imported columns internal names that can differ from the displayed names
+// (and "Author" is reserved for Created By), so every read and write goes through the list's column definitions.
+const COLS={};   // list -> {display -> internal}
+const RCOLS={};  // list -> {internal -> display}
+async function loadColumns(name){
+  const j=await graph(`/sites/${siteId}/lists/${encodeURIComponent(name)}/columns?$select=name,displayName,readOnly`);
+  const m={}, r={};
+  j.value.forEach(c=>{ if(c.readOnly && c.displayName!=='Created') return; if(!(c.displayName in m)) { m[c.displayName]=c.name; r[c.name]=c.displayName; } });
+  COLS[name]=m; RCOLS[name]=r;
+}
+const toInt = (list,display) => (COLS[list]&&COLS[list][display])||display;
+const toIntFields = (list,fields) => Object.fromEntries(Object.entries(fields).map(([k,v])=>[toInt(list,k),v]));
+const fromIntFields = (list,fields) => Object.fromEntries(Object.entries(fields).map(([k,v])=>[(RCOLS[list]&&RCOLS[list][k])||k,v]));
 async function listItems(name, select){
-  let url=`/sites/${siteId}/lists/${encodeURIComponent(name)}/items?$top=500&$expand=fields($select=${select.join(',')})`; const out=[];
-  while(url){ const j=await graph(url); out.push(...j.value.map(v=>Object.assign({spId:v.id},v.fields))); url=j['@odata.nextLink']||null; }
+  if(!COLS[name]) await loadColumns(name);
+  const sel=select.map(d=>toInt(name,d)).filter((v,i,a)=>a.indexOf(v)===i);
+  let url=`/sites/${siteId}/lists/${encodeURIComponent(name)}/items?$top=500&$expand=fields($select=${sel.join(',')})`; const out=[];
+  while(url){ const j=await graph(url); out.push(...j.value.map(v=>Object.assign({spId:v.id},fromIntFields(name,v.fields)))); url=j['@odata.nextLink']||null; }
   return out;
 }
-const patchItem = (list,id,fields) => graph(`/sites/${siteId}/lists/${encodeURIComponent(list)}/items/${id}/fields`,{method:'PATCH',body:JSON.stringify(fields)});
-const addItem = (list,fields) => graph(`/sites/${siteId}/lists/${encodeURIComponent(list)}/items`,{method:'POST',body:JSON.stringify({fields})});
+const patchItem = (list,id,fields) => graph(`/sites/${siteId}/lists/${encodeURIComponent(list)}/items/${id}/fields`,{method:'PATCH',body:JSON.stringify(toIntFields(list,fields))});
+const addItem = (list,fields) => graph(`/sites/${siteId}/lists/${encodeURIComponent(list)}/items`,{method:'POST',body:JSON.stringify({fields:toIntFields(list,fields)})});
 
 // ---------- load ----------
 function setLoading(msg){ const l=$('#loading'); if(msg===false){ l.classList.remove('on'); return; } l.classList.add('on'); $('#loading-msg').textContent=msg; }
 async function loadAll(){
   setLoading('Finding the AMC Partners site…');
   const site=await graph(`/sites/${CONFIG.siteHost}:${CONFIG.sitePath}`); siteId=site.id;
+  setLoading('Reading list columns…');
+  await Promise.all(Object.values(CONFIG.lists).map(loadColumns));
   setLoading('Loading functions, gates and cadence…');
   const [fn,gates,cad,upd,touch]=await Promise.all([
     listItems(CONFIG.lists.functions,['Title','FunctionID','Function','Group','Tier','Lead','Backup','StartDate','DueDate','DependsOn','Scope','Deliverable','Status','Percent','HoursToOffer','HoursLOIToClose']),
