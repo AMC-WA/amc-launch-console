@@ -603,7 +603,7 @@ async function graph(path, opts){
   return j;
 }
 async function listItems(name, select){
-  let url=`/sites/${siteId}/lists/${encodeURIComponent(name)}/items?$top=500&$expand=fields(select=${select.join(',')})`; const out=[];
+  let url=`/sites/${siteId}/lists/${encodeURIComponent(name)}/items?$top=500&$expand=fields($select=${select.join(',')})`; const out=[];
   while(url){ const j=await graph(url); out.push(...j.value.map(v=>Object.assign({spId:v.id},v.fields))); url=j['@odata.nextLink']||null; }
   return out;
 }
