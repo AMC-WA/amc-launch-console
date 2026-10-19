@@ -901,8 +901,10 @@ function runSearch(raw){
 }
 
 // ---------- boot ----------
+let inited=false;
 async function boot(){
   try{
+    if(!inited){ await pca.initialize(); inited=true; }
     const resp=await pca.handleRedirectPromise(); if(resp&&resp.account) account=resp.account;
     if(!account){ const accts=pca.getAllAccounts(); if(accts.length) account=accts[0]; }
     if(!account){ $('#signin').classList.add('on'); setLoading(false); return; }
@@ -911,7 +913,7 @@ async function boot(){
     await loadAll(); renderAll(); $('#signin').classList.remove('on');
   }catch(e){ setLoading(false); $('#signin').classList.add('on'); $('#signin-err').textContent=e.message||String(e); }
 }
-$('#btn-signin').onclick=()=>signIn().then(()=>boot()).catch(e=>{ $('#signin-err').textContent=e.message||String(e); });
+$('#btn-signin').onclick=async()=>{ try{ if(!inited){ await pca.initialize(); inited=true; } $('#signin-err').textContent=''; await signIn(); await boot(); }catch(e){ $('#signin-err').textContent=e.message||String(e); } };
 boot();
 })();
 </script>
