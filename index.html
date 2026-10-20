@@ -72,6 +72,7 @@ h1,h2,h3,h4{margin:0;text-wrap:balance;font-weight:600}
 .nav button svg{width:17px;height:17px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .nav button:hover{background:var(--surface-2);color:var(--fg)}
 .nav button.on{background:var(--accent-soft);color:var(--accent)}
+.nav #btn-tour{color:var(--brass)} .nav #btn-tour:hover{background:var(--brass-soft)}
 .nav .count{margin-left:auto;font-size:11px;background:var(--idle-soft);color:var(--fg-2);padding:1px 7px;border-radius:10px}
 .nav .count.hot{background:var(--crit-soft);color:var(--crit)}
 .rail .foot{margin-top:auto;padding:10px 8px 0;border-top:1px solid var(--line-2);font-size:12px;color:var(--fg-3)}
@@ -332,6 +333,49 @@ tr.row:hover td{background:var(--surface-2);cursor:pointer}
 @keyframes sp{to{transform:rotate(360deg)}}
 .route a.btn{text-decoration:none}
 </style>
+<style>
+/* Guide (Scout) and tips */
+.tour-mask{position:fixed;inset:0;z-index:50;pointer-events:none;display:none}
+.tour-mask.on{display:block}
+.tour-mask .dim{position:absolute;background:rgba(10,16,24,.55);pointer-events:auto}
+.tour-ring{position:fixed;z-index:51;border:2px solid var(--brass);border-radius:10px;box-shadow:0 0 0 4px rgba(163,116,30,.25);pointer-events:none;display:none;transition:all .25s ease}
+.tour-ring.on{display:block}
+.guide{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:min(400px,calc(100% - 32px));z-index:52;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 40px rgba(10,16,24,.28);display:none;overflow:hidden}
+.guide.on{display:block}
+.guide .gh{display:flex;gap:12px;align-items:flex-start;padding:14px 14px 0}
+.guide .av{width:56px;height:56px;flex:none}
+.guide .gt{flex:1;min-width:0}
+.guide .gt .eyebrow{margin-bottom:2px}
+.guide h3{font-family:var(--display);font-weight:500;font-size:19px;line-height:1.15;margin:0 0 6px}
+.guide p{margin:0;font-size:13.5px;line-height:1.5;color:var(--fg-2)}
+.guide p b{color:var(--fg)}
+.guide .gf{display:flex;align-items:center;gap:8px;padding:12px 14px 14px}
+.guide .gf .n{font-size:12px;color:var(--fg-3);margin-right:auto;font-variant-numeric:tabular-nums}
+.guide .x{position:absolute;top:8px;right:8px;background:none;border:0;font-size:18px;color:var(--fg-3);width:28px;height:28px;border-radius:6px}
+.guide .x:hover{background:var(--surface-2)}
+.guide .voice{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--fg-2);border:1px solid var(--line);border-radius:6px;padding:4px 8px;background:var(--surface)}
+.guide .voice.on{border-color:var(--brass);color:var(--brass);background:var(--brass-soft)}
+.guide .bubble{margin:10px 14px 0;padding:10px 12px;background:var(--surface-2);border-radius:8px;font-size:13.5px;line-height:1.5;color:var(--fg)}
+@media (max-width:760px){.guide{left:16px;right:16px;width:auto}}
+.scout{animation:bob 3s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){.scout{animation:none}}
+.tip{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--brass);color:var(--brass);background:var(--brass-soft);font-size:11px;font-weight:600;cursor:pointer;margin-left:8px;vertical-align:middle;line-height:1;flex:none}
+.tip:hover{background:var(--brass);color:#fff}
+body.tips-off .tip{display:none}
+.tipbox{position:fixed;z-index:53;max-width:320px;background:var(--surface);border:1px solid var(--brass);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.5;color:var(--fg);box-shadow:var(--shadow);display:none}
+.tipbox.on{display:block}
+.tipbox .t{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--brass);font-weight:600;margin-bottom:3px}
+.tipbox .more{margin-top:6px;font-size:12px}
+.tipbox .more a{cursor:pointer;color:var(--accent)}
+.welcome{position:fixed;inset:0;z-index:54;background:rgba(10,16,24,.5);display:none;align-items:center;justify-content:center;padding:16px}
+.welcome.on{display:flex}
+.welcome .box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px;width:min(460px,100%);box-shadow:0 12px 40px rgba(10,16,24,.3)}
+.welcome .box .row{display:flex;gap:14px;align-items:center}
+.welcome h2{font-family:var(--display);font-weight:500;font-size:22px;margin:0 0 4px}
+.welcome p{margin:0;color:var(--fg-2);font-size:14px}
+.welcome .acts{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;flex-wrap:wrap}
+</style>
 </head>
 <body>
 <div class="app">
@@ -355,6 +399,8 @@ tr.row:hover td{background:var(--surface-2);cursor:pointer}
       <button data-v="markets"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Markets</button>
       <div class="sec eyebrow">System</div>
       <button data-v="notify"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></svg>Notifications<span class="count hot" id="c-urgent"></span></button>
+      <button id="btn-tour"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v.5M11 11h1v5h1"/></svg>Take the tour</button>
+      <button id="btn-tips" style="font-size:12px;color:var(--fg-3)">Hide tips</button>
       <a class="navlink" href="reports/latest.html" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:8px 10px;color:var(--fg-2);font-weight:500;text-decoration:none;border-radius:6px"><svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M4 19V5a1 1 0 0 1 1-1h9l5 5v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM14 4v5h5M8 13h8M8 17h5"/></svg>Weekly report</a>
       <button data-v="build"><svg viewBox="0 0 24 24"><path d="M14 7l3 3-8 8H6v-3zM4 20h16"/></svg>Build plan</button>
     </nav>
@@ -677,13 +723,14 @@ async function loadAll(){
 
 // ---------- navigation ----------
 function show(v){ $$('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v)); $$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v)); $('.main').scrollTop=0; render(v); }
-$('#nav').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) show(b.dataset.v); });
+$('#nav').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&b.dataset.v) show(b.dataset.v); });
+window.__show=show;
 $('#me').addEventListener('change',()=>{ ME=$('#me').value; renderAll(); });
 $('#asof').textContent = TODAY.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'})+' · Wk '+wkNow;
 $('#btn-refresh').onclick=async()=>{ try{ await loadAll(); renderAll(); toast('Refreshed from SharePoint.'); }catch(e){ setLoading(false); toast('Refresh failed: '+e.message,5000); } };
 $('#btn-signout').onclick=()=>{ pca.setActiveAccount(null); pca.logoutRedirect({postLogoutRedirectUri:location.origin+location.pathname}); };
 function render(v){ ({home:renderHome,functions:renderFunctions,gates:renderGates,board:renderBoard,timeline:renderGantt,calendar:renderCal,swim:renderSwim,pipeline:renderPipeline,markets:renderMarkets,notify:renderNotify,build:()=>{}})[v](); }
-function renderAll(){ ['home','functions','gates','board','timeline','calendar','swim','pipeline','markets','notify'].forEach(render); renderCounts(); }
+function renderAll(){ ['home','functions','gates','board','timeline','calendar','swim','pipeline','markets','notify'].forEach(render); renderCounts(); if(window.__addTips) window.__addTips(); }
 function renderCounts(){
   const risk=D.items.filter(i=>['risk','block'].includes(stOf(i))).length;
   $('#c-func').textContent=risk? risk+' at risk':String(D.items.length); $('#c-func').className='count'+(risk?' hot':'');
@@ -940,12 +987,125 @@ async function boot(){
     if(!account){ $('#signin').classList.add('on'); setLoading(false); return; }
     pca.setActiveAccount(account);
     const given=((account.name||'').split(' ')[0]||'').toLowerCase(); ME=NAME2P[given]||'Jeff'; $('#me').value=ME; $('#me-name').textContent=account.name||account.username;
-    await loadAll(); renderAll(); $('#signin').classList.remove('on');
+    await loadAll(); renderAll(); $('#signin').classList.remove('on'); if(window.__addTips) window.__addTips(); if(window.__offerTour) window.__offerTour();
   }catch(e){ setLoading(false); $('#signin').classList.add('on'); $('#signin-err').textContent=e.message||String(e); }
 }
 $('#btn-signin').onclick=async()=>{ try{ if(!inited){ await pca.initialize(); inited=true; } $('#signin-err').textContent=''; await signIn(); await boot(); }catch(e){ $('#signin-err').textContent=e.message||String(e); } };
 $('#btn-switch').onclick=async()=>{ try{ if(!inited){ await pca.initialize(); inited=true; } pca.setActiveAccount(null); await pca.logoutRedirect({postLogoutRedirectUri:location.origin+location.pathname}); }catch(e){ $('#signin-err').textContent=e.message||String(e); } };
 boot();
+})();
+</script>
+<div class="tour-mask" id="tour-mask"><div class="dim" id="dim-t"></div><div class="dim" id="dim-b"></div><div class="dim" id="dim-l"></div><div class="dim" id="dim-r"></div></div>
+<div class="tour-ring" id="tour-ring"></div>
+<aside class="guide" id="guide" aria-live="polite">
+  <button class="x" id="guide-x" aria-label="End the tour">×</button>
+  <div class="gh"><div class="av" id="guide-av"></div><div class="gt"><div class="eyebrow" id="guide-eyebrow">Scout · tour</div><h3 id="guide-title"></h3><p id="guide-text"></p></div></div>
+  <div class="bubble" id="guide-try" hidden></div>
+  <div class="gf"><span class="n" id="guide-n"></span><button class="voice" id="guide-voice" title="Read each stop aloud">🔈 Voice off</button><button class="btn sm" id="guide-back">Back</button><button class="btn primary sm" id="guide-next">Next</button></div>
+</aside>
+<div class="tipbox" id="tipbox"><div class="t" id="tip-t"></div><div id="tip-b"></div><div class="more"><a id="tip-tour">Show me in the tour</a></div></div>
+<div class="welcome" id="welcome"><div class="box"><div class="row"><div class="av" id="welcome-av" style="width:64px;height:64px;flex:none"></div><div><h2>Welcome to the Launch Console</h2><p>I am Scout. I can walk you through the console in about four minutes: what each view is for, where to change a status, log a touch and post an update. You can stop at any point and come back from the rail.</p></div></div><div class="acts"><button class="btn" id="welcome-later">Not now</button><button class="btn primary" id="welcome-go">Take the tour</button></div></div></div>
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+// Scout: an original guide character in the console's palette
+const SCOUT=`<svg class="scout" viewBox="0 0 64 64" width="100%" height="100%" aria-hidden="true">
+<ellipse cx="32" cy="61" rx="20" ry="2.5" fill="rgba(23,33,46,.12)"/>
+<path d="M14 64 V52 q0-6 6-8 l5-2 h14 l5 2 q6 2 6 8 V64 Z" fill="#4b5d3a"/>
+<path d="M27 42 l5 6 l5-6 l-2 10 h-6 Z" fill="#5f7448"/>
+<path d="M12 56 l4 8 h-4 Z M52 56 l-4 8 h4 Z" fill="#3b4a2e"/>
+<g fill="#d9b35a"><path d="M15.5 50 l3 2.2 l3-2.2 v1.6 l-3 2.2 l-3-2.2 Z"/><path d="M15.5 53.6 l3 2.2 l3-2.2 v1.6 l-3 2.2 l-3-2.2 Z"/><path d="M15.5 57.2 l3 2.2 l3-2.2 v1.6 l-3 2.2 l-3-2.2 Z"/></g>
+<circle cx="32" cy="29" r="12.5" fill="#e9c9a3"/>
+<path d="M18 27 q0-13 14-13 q14 0 14 13 l-1.5 .8 H19.5 Z" fill="#4b5d3a"/>
+<rect x="17" y="25.5" width="30" height="4.5" rx="2" fill="#3b4a2e"/>
+<path d="M16 29.6 h32 l1.5 2.2 q-17 3 -35 0 Z" fill="#2f3b25"/>
+<circle cx="32" cy="21" r="2.6" fill="#d9b35a"/><circle cx="32" cy="21" r="1.1" fill="#4b5d3a"/>
+<circle cx="27" cy="32" r="1.7" fill="#17212e"/><circle cx="37" cy="32" r="1.7" fill="#17212e"/>
+<path d="M27.5 37.5 q4.5 3.2 9 0" stroke="#8a4b3a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+<rect x="30" y="46" width="4" height="4" rx="1" fill="#d9b35a"/><rect x="30" y="52" width="4" height="4" rx="1" fill="#d9b35a"/>
+</svg>`;
+$('#guide-av').innerHTML=SCOUT; $('#welcome-av').innerHTML=SCOUT;
+
+const STOPS=[
+ {view:'home',sel:'.vh',title:'Home is the morning page',text:'It shows progress against the <b>62 functions</b> of the launch, the next <b>gate</b>, what needs your hand this week, and the latest posts. Everything you see is read live from the AMC Partners lists.'},
+ {view:'home',sel:'.grid.g4',title:'Four numbers to glance at',text:'Functions on track, functions at risk or blocked, the next gate with days to go, and owners in conversation measured against the <b>30 named owners</b> Gate G1 requires.'},
+ {view:'home',sel:'#h-mine',title:'Your week',text:'The functions you lead or back up that are due in the next three weeks, overdue ones first. The selector at the top right lets you view the console as another partner.'},
+ {view:'home',sel:'.search',title:'Ask the console',text:'Type a question such as <b>what is due this week for Mario</b> or <b>Florida owners with 2027 maturities</b>. The answer lists functions, owners, calendar dates and documents; click any result to open it.'},
+ {view:'functions',sel:'#f-table',title:'Functions, the launch plan itself',text:'All 62 functions with lead, backup, tier, dates and status. Filter by group, partner, tier or status. <b>Click any row</b> to open its drawer.',try:'Try it: click a function row. In the drawer, the status buttons and the percent slider write straight to the list; a post in the thread notifies the lead and backup.'},
+ {view:'gates',sel:'#gates-a',title:'Gates',text:'The twelve gates from the Launch Brief, each with the proof required and the fallback if missed. A gate turns amber when a function feeding it is at risk.'},
+ {view:'board',sel:'#board',title:'Board',text:'The same functions as cards by status. <b>Drag a card</b> to another column to change its status; the change is saved and posted to the thread. Switch to <b>Owner pipeline</b> to drag owners between stages.'},
+ {view:'timeline',sel:'#gantt',title:'Timeline',text:'Weeks 0 to 40 of the Work Plan. Bars fill as functions progress; the gold line is today, the dashed red line the first-LOI target week, and the diamonds are milestones.'},
+ {view:'calendar',sel:'.cal',title:'Calendar',text:'Due dates, gates, milestones, owner touches and the weekly partner meeting. The same items appear on your own Outlook calendar, tagged AMC Launch, refreshed every night.'},
+ {view:'pipeline',sel:'#p-table',title:'Owner pipeline',text:'The 2,095 owners of List A and List B, staged per function 1.7. <b>Click an owner</b> to open the drawer: set the stage, mark them <b>Wave 1</b>, set a cadence and next touch, and <b>log every touch</b>. After two quarters the log tells us which signals predict a returned call.',try:'Try it: open an owner, set a next touch date, and log a touch. The touch goes into the Touches list and the date onto your Outlook calendar tonight.'},
+ {view:'notify',sel:'#v-notify .card',title:'Notifications and your cadence',text:'Set when your <b>daily digest</b> arrives and how far ahead you want due-date and gate warnings. Post an update here; switch <b>Urgent</b> on and all four partners are notified in Teams and by email within a minute.'},
+ {view:'build',sel:'#v-build .card',title:'Build plan and operating notes',text:'How the console is put together, what runs on a schedule, and the notes for keeping it running. The <b>Weekly report</b> link in the rail opens the latest Monday pipeline report. That is the tour; I am in the rail whenever you want it again.'},
+];
+let i=-1, voice=false, synth=window.speechSynthesis;
+function el(s){ return document.querySelector(s); }
+function stop(){ i=-1; $('#guide').classList.remove('on'); $('#tour-mask').classList.remove('on'); $('#tour-ring').classList.remove('on'); if(synth) synth.cancel(); try{ localStorage.setItem('amc-tour-seen','1'); }catch(e){} }
+function speak(t){ if(!voice||!synth) return; synth.cancel(); const u=new SpeechSynthesisUtterance(t.replace(/<[^>]+>/g,'')); u.rate=1; synth.speak(u); }
+function place(){
+  const s=STOPS[i]; const t=el(s.sel); const m=$('#tour-mask'); m.classList.add('on');
+  const r=t?t.getBoundingClientRect():{top:0,left:0,width:0,height:0,bottom:0,right:0};
+  const pad=8, top=Math.max(0,r.top-pad), left=Math.max(0,r.left-pad), bottom=Math.min(innerHeight,r.bottom+pad), right=Math.min(innerWidth,r.right+pad);
+  $('#dim-t').style.cssText=`left:0;top:0;width:100%;height:${top}px`; $('#dim-b').style.cssText=`left:0;top:${bottom}px;width:100%;height:${Math.max(0,innerHeight-bottom)}px`;
+  $('#dim-l').style.cssText=`left:0;top:${top}px;width:${left}px;height:${bottom-top}px`; $('#dim-r').style.cssText=`left:${right}px;top:${top}px;width:${Math.max(0,innerWidth-right)}px;height:${bottom-top}px`;
+  const ring=$('#tour-ring'); ring.style.cssText=`top:${top}px;left:${left}px;width:${right-left}px;height:${bottom-top}px`; ring.classList.toggle('on',!!t);
+}
+function go(n){
+  if(n<0||n>=STOPS.length){ stop(); return; }
+  i=n; const s=STOPS[i]; window.__show(s.view);
+  const t=el(s.sel); if(t) t.scrollIntoView({block:'nearest',behavior:'smooth'});
+  $('#guide-title').textContent=s.title; $('#guide-text').innerHTML=s.text; $('#guide-n').textContent=(i+1)+' of '+STOPS.length;
+  const tr=$('#guide-try'); tr.hidden=!s.try; tr.textContent=s.try||'';
+  $('#guide-back').disabled=i===0; $('#guide-next').textContent=i===STOPS.length-1?'Finish':'Next';
+  $('#guide').classList.add('on'); setTimeout(place,350); speak(s.title+'. '+s.text+(s.try?' '+s.try:''));
+}
+window.addEventListener('resize',()=>{ if(i>=0) place(); }); document.querySelector('.main').addEventListener('scroll',()=>{ if(i>=0) place(); });
+$('#guide-next').onclick=()=>go(i+1); $('#guide-back').onclick=()=>go(i-1); $('#guide-x').onclick=stop;
+$('#guide-voice').onclick=()=>{ voice=!voice; $('#guide-voice').classList.toggle('on',voice); $('#guide-voice').textContent=voice?'🔊 Voice on':'🔈 Voice off'; if(voice&&i>=0) speak(STOPS[i].title+'. '+STOPS[i].text); else if(synth) synth.cancel(); };
+$('#tour-mask').addEventListener('click',e=>{ if(e.target.classList.contains('dim')) stop(); });
+window.__startTour=()=>go(0);
+$('#btn-tour').onclick=()=>{ $('#welcome').classList.remove('on'); go(0); };
+$('#welcome-go').onclick=()=>{ $('#welcome').classList.remove('on'); go(0); };
+$('#welcome-later').onclick=()=>{ $('#welcome').classList.remove('on'); try{ localStorage.setItem('amc-tour-seen','1'); }catch(e){} };
+window.__offerTour=()=>{ let seen=false; try{ seen=!!localStorage.getItem('amc-tour-seen'); }catch(e){} if(!seen) $('#welcome').classList.add('on'); };
+
+// Tips
+const TIPS={
+ 'home-groups':['Progress by group','Each bar is the average percent complete of the group\'s functions. It turns amber when any function in the group is at risk or blocked. Click a group\'s functions in the Functions view to see why.',4],
+ 'home-ms':['Milestones','M1 to M9 from the Work Plan. The chip shows days to go, At risk when a feeding function is at risk, or Done when all feeding functions are done. Click a milestone to mark it Passed or Missed.',5],
+ 'home-alerts':['Updates and alerts','The latest posts from any partner. Urgent posts are outlined in red and were also sent to Teams and email at the time. Click one to open the function it belongs to.',10],
+ 'home-touch':['Next touches due','Owners you are assigned to with a next-touch date, soonest first. Overdue touches appear in red and in your daily digest.',9],
+ 'functions':['Working the Functions table','Filters combine. "Anyone" matches lead or backup. A red "late" flag means the due date has passed and the function is not Done. Click a row to change status, progress or post to its thread.',4],
+ 'gates':['Reading a gate','Proof is what has to exist on the date; the fallback is the brief\'s own answer if it does not. The small chips are the functions that feed the gate, colored by their status; click one to open it.',5],
+ 'board':['Using the Board','Drag cards between columns to change status. "Not started" shows only functions starting within six weeks so the column stays readable. Owner pipeline shows Wave 1 owners in the Identified column.',6],
+ 'timeline':['Reading the Timeline','Bar color is the tier (T1 critical path, T2 parallel, T3 LOI to close, T4 post-close). The lighter fill inside a bar is percent complete. Hover a bar for dates; click to open the function.',7],
+ 'calendar':['Calendar','Red items are gates, gold are milestones, blue are due dates, green the weekly partner meeting, light blue your owner touches. The same items are on your Outlook calendar as all-day entries tagged AMC Launch.',8],
+ 'swim':['Swimlanes','Each lane is one partner (or group, or tier). Columns are status. The lane header shows the hours to offer from the Work Plan, a quick read on load.',6],
+ 'pipeline':['Owner pipeline','"Active and Wave 1" hides the 2,000 owners nobody has touched. Use the search box for an owner, property or lender. Mark the 30 named owners as Wave 1 from each owner\'s drawer; the Home tile counts them against Gate G1.',9],
+ 'markets':['Markets','Counts come from the Owners list as it stands. Reassigning a market is a change to the AssignedTo column; the console and the digests follow it the next time they load.',9],
+ 'notify':['Cadence and posts','Your digest time and warning windows live in the Cadence list and are read by the scheduled jobs each run. Urgent cannot be turned off for recipients; the poster decides urgency.',10],
+};
+function tipChip(key){ return `<span class="tip" data-tip="${key}" title="Tip" role="button" tabindex="0">?</span>`; }
+function addTips(){
+  const put=(sel,key)=>{ const h=document.querySelector(sel); if(h&&!h.querySelector('.tip')) h.insertAdjacentHTML('beforeend',tipChip(key)); };
+  put('#v-home .grid.g23 .card:nth-child(1) h3','home-groups'); put('#h-ms',null);
+  $$('#v-home .card h3').forEach(h=>{ const t=h.textContent.trim(); const k={'Progress by functional group':'home-groups','Milestones':'home-ms','Updates and alerts':'home-alerts','Next touches due':'home-touch'}[t]; if(k&&!h.querySelector('.tip')) h.insertAdjacentHTML('beforeend',tipChip(k)); });
+  [['functions','#v-functions .vh h1'],['gates','#v-gates .vh h1'],['board','#v-board .vh h1'],['timeline','#v-timeline .vh h1'],['calendar','#v-calendar .vh h1'],['swim','#v-swim .vh h1'],['pipeline','#v-pipeline .vh h1'],['markets','#v-markets .vh h1'],['notify','#v-notify .vh h1']].forEach(([k,s])=>put(s,k));
+}
+const box=$('#tipbox'); let curTip=null;
+document.addEventListener('click',e=>{
+  const t=e.target.closest('.tip');
+  if(!t){ if(!e.target.closest('#tipbox')) box.classList.remove('on'); return; }
+  const k=t.dataset.tip; const tip=TIPS[k]; if(!tip) return; curTip=tip;
+  $('#tip-t').textContent=tip[0]; $('#tip-b').textContent=tip[1]; box.classList.add('on');
+  const r=t.getBoundingClientRect(); box.style.top=Math.min(innerHeight-box.offsetHeight-12,r.bottom+8)+'px'; box.style.left=Math.min(innerWidth-box.offsetWidth-12,Math.max(12,r.left-8))+'px';
+});
+$('#tip-tour').onclick=()=>{ box.classList.remove('on'); if(curTip) go(curTip[2]); };
+$('#btn-tips').onclick=()=>{ const off=document.body.classList.toggle('tips-off'); $('#btn-tips').textContent=off?'Show tips':'Hide tips'; try{ localStorage.setItem('amc-tips',off?'off':'on'); }catch(e){} };
+try{ if(localStorage.getItem('amc-tips')==='off'){ document.body.classList.add('tips-off'); $('#btn-tips').textContent='Show tips'; } }catch(e){}
+window.__addTips=addTips;
 })();
 </script>
 
