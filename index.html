@@ -355,10 +355,11 @@ tr.row:hover td{background:var(--surface-2);cursor:pointer}
       <button data-v="markets"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Markets</button>
       <div class="sec eyebrow">System</div>
       <button data-v="notify"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"/></svg>Notifications<span class="count hot" id="c-urgent"></span></button>
+      <a class="navlink" href="reports/latest.html" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:10px;padding:8px 10px;color:var(--fg-2);font-weight:500;text-decoration:none;border-radius:6px"><svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><path d="M4 19V5a1 1 0 0 1 1-1h9l5 5v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM14 4v5h5M8 13h8M8 17h5"/></svg>Weekly report</a>
       <button data-v="build"><svg viewBox="0 0 24 24"><path d="M14 7l3 3-8 8H6v-3zM4 20h16"/></svg>Build plan</button>
     </nav>
     <div class="teams"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 10h8M8 14h5"/></svg><span>Runs as a tab in <b>Teams › AMC Partners</b></span></div>
-    <div class="foot">v1.0 · data lives in the AMC Partners SharePoint lists</div>
+    <div class="foot">v1.1 · data lives in the AMC Partners SharePoint lists</div>
   </aside>
 
   <header class="topbar">
@@ -486,9 +487,9 @@ tr.row:hover td{background:var(--surface-2);cursor:pointer}
         <div class="arch">
           <div class="layer rec"><div class="eyebrow">Data</div><b>SharePoint Lists</b><p>Six lists: Functions, Updates, Owners, Touches, Gates, Cadence. Row-level audit, versioning, 30M-row capacity. Zero added cost.</p></div>
           <div class="layer rec"><div class="eyebrow">App</div><b>This page</b><p>Static page on GitHub Pages, Microsoft Entra sign-in, Microsoft Graph to the lists. Pinned as a tab in the AMC Partners team. Decision 5, 19 Oct 2026.</p></div>
-          <div class="layer rec"><div class="eyebrow">Automation</div><b>Power Automate</b><p>Digests on each partner's cadence, urgent posts to Teams and Outlook at once, due-date and gate warnings, Outlook events for every date.</p></div>
-          <div class="layer rec"><div class="eyebrow">Reporting</div><b>Power BI</b><p>Weekly pipeline report for the partner meeting; partner-load and gate dashboards embedded in the app.</p></div>
-          <div class="layer rec"><div class="eyebrow">AI search</div><b>Copilot Studio agent</b><p>Grounded on the six lists and the deal-file folders in SharePoint. Answers the search bar above in Teams chat too.</p></div>
+          <div class="layer rec"><div class="eyebrow">Automation</div><b>Power Automate + scheduled jobs</b><p>Urgent posts through Power Automate. Digest, calendar sync and the weekly report are jobs in the console's repository calling Microsoft Graph as the app, so no partner account is involved.</p></div>
+          <div class="layer rec"><div class="eyebrow">Reporting</div><b>Weekly report job</b><p>Pipeline by stage and partner, touches, stage movements since last week, Wave 1 progress, functions at risk, gates ahead. Emailed and kept in the repository.</p></div>
+          <div class="layer"><div class="eyebrow">AI search</div><b>Deferred</b><p>Rule-based search in the bar above for now. Microsoft 365 Copilot is the preferred route when the firm takes up licenses (Decision 15).</p></div>
         </div>
       </div>
       <div class="grid g2">
@@ -510,15 +511,26 @@ tr.row:hover td{background:var(--surface-2);cursor:pointer}
           <p class="faint" style="font-size:12px;margin:10px 0 0">The Owners list is loaded from List A and List B; the full 4,029-row screen stays in Excel and is re-imported on each quarterly refresh (function 9.2).</p>
         </div>
       </div>
+      <div class="card" style="margin-top:14px"><h3>Operating notes</h3>
+        <div class="tw"><table><tbody>
+          <tr><td>Sign-in</td><td>Everyone signs in with the americanmilitarycommunities.com account. If the console refuses, use "Sign out of all accounts and start over" on the sign-in card, then sign in again and pick the AMC account at the prompt.</td></tr>
+          <tr><td>Changing data</td><td>Change statuses, stages, touches, cadence and Wave 1 here or in the SharePoint lists; never on the calendar items, which are rewritten nightly from the lists.</td></tr>
+          <tr><td>Urgent posts</td><td>Any post with Urgent on reaches all four partners in the Program channel and by email within a minute (Power Automate flow "AMC urgent post", owned by both of Jeff's accounts).</td></tr>
+          <tr><td>Scheduled jobs</td><td>Digest, calendar sync and weekly report run from the repository AMC-WA/amc-launch-console under Actions. Each can be run by hand there, with a test address.</td></tr>
+          <tr><td>Credentials</td><td>The jobs use the AMC Launch Console app registration's client secret, created 20 Oct 2026, expiring October 2028. Replace it in Entra (Certificates &amp; secrets) and in the repository's Actions secrets before then.</td></tr>
+          <tr><td>Accend accounts</td><td>When the accend.us accounts are retired: re-point the urgent flow's SharePoint and Teams connections to AMC accounts first; everything else already runs as the app or as AMC accounts.</td></tr>
+          <tr><td>Console changes</td><td>The console is one file, index.html, in the repository; a new version replaces it and is live within a minute.</td></tr>
+        </tbody></table></div>
+      </div>
       <div class="card" style="margin-top:14px"><h3>Build sequence</h3>
         <div class="tw"><table><thead><tr><th>Step</th><th>What gets built</th><th>Done when</th></tr></thead><tbody>
           <tr><td>1 ✓</td><td>Create the AMC Partners team and the six SharePoint lists; import the Work Plan and the Owners</td><td>Done 19 Oct 2026: Functions 62, Owners 2,095, Gates 21, Updates, Touches, Cadence</td></tr>
           <tr><td>2 ✓</td><td>This page, signed in with Microsoft Entra, reading and writing the lists through Microsoft Graph; hosted on GitHub Pages</td><td>Done 19 Oct 2026; pin as a Teams tab next</td></tr>
-          <tr><td>3</td><td>Power Automate: urgent post flow, daily digest, due-date and gate warnings, Outlook calendar sync</td><td>A test urgent post reaches Teams and Outlook within a minute; a digest arrives at the set time</td></tr>
+          <tr><td>3 ✓</td><td>Urgent post flow (Power Automate: Teams channel post and High-importance email). Daily digest, Outlook calendar sync and the weekly pipeline report run as scheduled jobs in the console's repository through Microsoft Graph, under the app registration</td><td>Done 20 Oct 2026. Digest 06:00 to 08:00 ET per Cadence; calendars nightly 05:30 ET; report Monday 08:00 ET or Sunday 18:00 ET per Cadence</td></tr>
           <tr><td>4 ✓</td><td>Board, Timeline, Calendar and Swimlane screens</td><td>Live in this page</td></tr>
-          <tr><td>5</td><td>Power BI weekly pipeline report; Copilot Studio agent over the lists and deal files</td><td>Report used in a partner meeting; the agent answers the three test questions</td></tr>
+          <tr><td>5 ✓ / deferred</td><td>Weekly pipeline report: done as an emailed report, saved in the repository (<a href="reports/latest.html" target="_blank" rel="noopener">latest report</a>). AI search: deferred by Decision 15 of 20 Oct 2026; the console's rule-based search stands, with Microsoft 365 Copilot the preferred route when licensing is taken up</td><td>Report in use from the week of 26 Oct 2026</td></tr>
         </tbody></table></div>
-        <p class="faint" style="font-size:12px;margin:10px 0 0">Gate G1 asks for the CRM live with 30 named owners by November 13, 2026. Steps 1, 2 and 4 are done; naming the 30 is the Wave 1 flag on the owner drawer. Step 3 (automation) is next.</p>
+        <p class="faint" style="font-size:12px;margin:10px 0 0">Gate G1 asks for the CRM live with 30 named owners by November 13, 2026. The system is complete; naming the 30 is the Wave 1 flag on each owner's drawer.</p>
       </div>
     </section>
   </main>
@@ -830,7 +842,7 @@ $('#n-save').onclick=async()=>{ const m=me(); const c=D.cadence[m]; if(!c){ toas
 async function post(kind,id,msg,urgent,notify){ const now=new Date(); const fields={Title:(id+' '+msg).slice(0,120),AboutKind:kind,AboutID:id,Author:me(),Message:msg,Urgent:urgent?'Yes':'No',PostedAt:now.toISOString(),NotifyTo:notify||'Lead and backup'};
   const r=await addItem(CONFIG.lists.updates,fields); D.posts.unshift({spId:r.id,kind,id,who:me(),when:iso(now)+' '+now.toTimeString().slice(0,5),msg,urgent,notify}); }
 $('#n-post').onclick=async()=>{ const msg=$('#n-msg').value.trim(); if(!msg){ toast('Write the update first.'); return; } const id=$('#n-about').value; const urgent=$('#n-urgent').checked; const it=fnById(id);
-  try{ await post('Function',id,msg,urgent,$('#n-to').value); $('#n-msg').value=''; $('#n-urgent').checked=false; renderAll(); toast(urgent?'Urgent post saved; the urgent flow notifies '+it.lead+' and '+it.backup+' now.':'Posted to the '+id+' thread. Goes out with the next digest.'); }catch(e){ toast('Could not post: '+e.message,5000); } };
+  try{ await post('Function',id,msg,urgent,$('#n-to').value); $('#n-msg').value=''; $('#n-urgent').checked=false; renderAll(); toast(urgent?'Urgent: all four partners are notified in Teams and by email within a minute.':'Posted to the '+id+' thread. Goes out with the next digest.'); }catch(e){ toast('Could not post: '+e.message,5000); } };
 $('#btn-post').onclick=()=>show('notify');
 
 // ---------- DRAWER ----------
