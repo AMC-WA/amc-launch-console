@@ -1,0 +1,30 @@
+name: AMC calendar sync
+on:
+  schedule:
+    - cron: "30 9 * * *"
+  workflow_dispatch:
+    inputs:
+      partner:
+        description: "Only this partner, e.g. Jeff (blank = all)"
+        required: false
+      dry_run:
+        description: "Type yes to plan without changing any calendar"
+        required: false
+jobs:
+  calendar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Sync calendars
+        env:
+          AMC_TENANT_ID: ${{ secrets.AMC_TENANT_ID }}
+          AMC_CLIENT_ID: ${{ secrets.AMC_CLIENT_ID }}
+          AMC_CLIENT_SECRET: ${{ secrets.AMC_CLIENT_SECRET }}
+        run: |
+          ARGS=""
+          [ -n "${{ github.event.inputs.partner }}" ] && ARGS="$ARGS --partner ${{ github.event.inputs.partner }}"
+          [ "${{ github.event.inputs.dry_run }}" = "yes" ] && ARGS="$ARGS --dry-run"
+          python calendar_sync.py $ARGS
