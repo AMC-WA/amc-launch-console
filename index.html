@@ -529,7 +529,7 @@ tr.row:hover td{background:var(--surface-2);cursor:pointer}
 <div class="toast" id="toast"></div>
 
 <div class="overlay" id="loading"><div class="box"><div class="spin"></div><div id="loading-msg">Loading…</div></div></div>
-<div class="overlay" id="signin"><div class="box"><div class="brand" style="justify-content:center"><div class="mark">A</div><div><div class="name">AMC Launch Console</div><div class="sub">UPREIT program · ERP + CRM</div></div></div><p class="muted" style="margin:8px 0 16px;text-align:center">Sign in with your Accend Microsoft 365 account. The page reads and writes the AMC Partners lists on your behalf.</p><button class="btn primary" id="btn-signin" style="width:100%;justify-content:center">Sign in with Microsoft</button><div id="signin-err" class="faint" style="font-size:12px;margin-top:10px;color:var(--crit)"></div></div></div>
+<div class="overlay" id="signin"><div class="box"><div class="brand" style="justify-content:center"><div class="mark">A</div><div><div class="name">AMC Launch Console</div><div class="sub">UPREIT program · ERP + CRM</div></div></div><p class="muted" style="margin:8px 0 16px;text-align:center">Sign in with your Microsoft 365 account and choose the account to use at the prompt. The page reads and writes the AMC Partners lists on your behalf.</p><button class="btn primary" id="btn-signin" style="width:100%;justify-content:center">Sign in with Microsoft</button><button class="btn" id="btn-switch" style="width:100%;justify-content:center;margin-top:8px">Sign out of all accounts and start over</button><div id="signin-err" class="faint" style="font-size:12px;margin-top:10px;color:var(--crit)"></div></div></div>
 <script src="msal-browser.min.js"></script>
 <script>
 (function(){
@@ -589,7 +589,7 @@ const pca = new msal.PublicClientApplication({
   cache:{ cacheLocation:'localStorage' }
 });
 const inFrame = window.self !== window.top;
-async function signIn(){ if(inFrame){ const r=await pca.loginPopup({scopes:CONFIG.scopes}); account=r.account; } else { await pca.loginRedirect({scopes:CONFIG.scopes}); } }
+async function signIn(){ const req={scopes:CONFIG.scopes,prompt:'select_account'}; if(inFrame){ const r=await pca.loginPopup(req); account=r.account; pca.setActiveAccount(account); } else { await pca.loginRedirect(req); } }
 async function token(){
   try{ const r=await pca.acquireTokenSilent({scopes:CONFIG.scopes,account}); return r.accessToken; }
   catch(e){ const r=await pca.acquireTokenPopup({scopes:CONFIG.scopes,account}); return r.accessToken; }
@@ -669,7 +669,7 @@ $('#nav').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b
 $('#me').addEventListener('change',()=>{ ME=$('#me').value; renderAll(); });
 $('#asof').textContent = TODAY.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'})+' · Wk '+wkNow;
 $('#btn-refresh').onclick=async()=>{ try{ await loadAll(); renderAll(); toast('Refreshed from SharePoint.'); }catch(e){ setLoading(false); toast('Refresh failed: '+e.message,5000); } };
-$('#btn-signout').onclick=()=>pca.logoutRedirect({account});
+$('#btn-signout').onclick=()=>{ pca.setActiveAccount(null); pca.logoutRedirect({postLogoutRedirectUri:location.origin+location.pathname}); };
 function render(v){ ({home:renderHome,functions:renderFunctions,gates:renderGates,board:renderBoard,timeline:renderGantt,calendar:renderCal,swim:renderSwim,pipeline:renderPipeline,markets:renderMarkets,notify:renderNotify,build:()=>{}})[v](); }
 function renderAll(){ ['home','functions','gates','board','timeline','calendar','swim','pipeline','markets','notify'].forEach(render); renderCounts(); }
 function renderCounts(){
@@ -922,8 +922,9 @@ let inited=false;
 async function boot(){
   try{
     if(!inited){ await pca.initialize(); inited=true; }
-    const resp=await pca.handleRedirectPromise(); if(resp&&resp.account) account=resp.account;
-    if(!account){ const accts=pca.getAllAccounts(); if(accts.length) account=accts[0]; }
+    const resp=await pca.handleRedirectPromise(); if(resp&&resp.account){ account=resp.account; pca.setActiveAccount(account); }
+    if(!account) account=pca.getActiveAccount();
+    if(!account){ const accts=pca.getAllAccounts(); if(accts.length===1) account=accts[0]; }
     if(!account){ $('#signin').classList.add('on'); setLoading(false); return; }
     pca.setActiveAccount(account);
     const given=((account.name||'').split(' ')[0]||'').toLowerCase(); ME=NAME2P[given]||'Jeff'; $('#me').value=ME; $('#me-name').textContent=account.name||account.username;
@@ -931,6 +932,7 @@ async function boot(){
   }catch(e){ setLoading(false); $('#signin').classList.add('on'); $('#signin-err').textContent=e.message||String(e); }
 }
 $('#btn-signin').onclick=async()=>{ try{ if(!inited){ await pca.initialize(); inited=true; } $('#signin-err').textContent=''; await signIn(); await boot(); }catch(e){ $('#signin-err').textContent=e.message||String(e); } };
+$('#btn-switch').onclick=async()=>{ try{ if(!inited){ await pca.initialize(); inited=true; } pca.setActiveAccount(null); await pca.logoutRedirect({postLogoutRedirectUri:location.origin+location.pathname}); }catch(e){ $('#signin-err').textContent=e.message||String(e); } };
 boot();
 })();
 </script>
