@@ -1,0 +1,34 @@
+name: AMC daily digest
+on:
+  schedule:
+    - cron: "0 10,11,12,13 * * *"
+  workflow_dispatch:
+    inputs:
+      hour:
+        description: "Act as this Eastern hour, e.g. 07:00 (blank = now)"
+        required: false
+      to:
+        description: "Send every digest to this address instead of the partners (test)"
+        required: false
+      partner:
+        description: "Only this partner, e.g. Jeff (blank = all)"
+        required: false
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Send digests
+        env:
+          AMC_TENANT_ID: ${{ secrets.AMC_TENANT_ID }}
+          AMC_CLIENT_ID: ${{ secrets.AMC_CLIENT_ID }}
+          AMC_CLIENT_SECRET: ${{ secrets.AMC_CLIENT_SECRET }}
+        run: |
+          ARGS=""
+          [ -n "${{ github.event.inputs.hour }}" ] && ARGS="$ARGS --hour ${{ github.event.inputs.hour }}"
+          [ -n "${{ github.event.inputs.to }}" ] && ARGS="$ARGS --to ${{ github.event.inputs.to }}"
+          [ -n "${{ github.event.inputs.partner }}" ] && ARGS="$ARGS --partner ${{ github.event.inputs.partner }}"
+          python digest.py $ARGS
